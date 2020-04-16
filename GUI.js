@@ -5,12 +5,16 @@ module.exports = class {
     config = null;
     player = null;
     constructor() {
+        this.render = this.render.bind(this);
         this.config = Config.getInstance();
-        this.player = new Player(this.render.bind(this));
+        this.player = new Player();
+        this.player.on('message', this.render);
+        this.player.init();
     }
     render() { /* STUB */ }
-    onExtit() {
-        this.onStop();
-        this.isRunning = false;
+    exit() {
+        this.player.off('message', this.render);
+        this.player.destroy();
+        process.exit(0);
     }
 }

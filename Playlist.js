@@ -64,14 +64,7 @@ module.exports = class {
             return false;
         }
     }
-    // list(size = 6) {
-    //     const from = Math.max(0, this.position - (Math.floor(size / 2)));
-    //     const to = Math.min(this.list.length - 1, this.position + (Math.floor(size / 2)));
-    //     return this.list.slice(from, to).map((tune, i) => ({
-    //         type: tune.type,
-    //         name: tune.name,
-    //         extension: tune.extension,
-    //         index: (from + i) + 1
-    //     }));
-    // }
+    rewind() {
+        this.position = 0;
+    }
 };

@@ -5,6 +5,7 @@
     "shuffle": true,
     "autoplay": true,
     "listsize": 6,
+    "tick": 1000,
     "players": [
         {
             "type": "adplug",
@@ -15,6 +16,23 @@
                 "::filename::"
             ],
             "match": "(\\.amd|\\.snd)"
+        },
+        {
+            "type": "adplug",
+            "name": "Real Adlib Player",
+            "cmd": "adplay",
+            "options": [
+                "-o",
+                "::filename::"
+            ],
+            "match": "(\\.rad)"
         }
-    ]
+    ],
+    "volume": {
+        "fade": true,
+        "max": 255,
+        "min": 0,
+        "cmdget": "",
+        "cmdset": ""
+    }
 }

@@ -2,34 +2,38 @@ const GUI = require("./GUI");
 const rdl = require("readline");
 const stdin = process.stdin;
 
+function capitalize(txt) {
+    return txt.charAt(0).toUpperCase() + txt.slice(1);
+}
+
 module.exports = class extends GUI {
     constructor() {
         super();
-        this.player.play();
+        this.onKeyPress = this.onKeyPress.bind(this);
         stdin.setRawMode(true);
         stdin.resume();
         stdin.setEncoding('utf8');
-        stdin.on('data', (key) => {
-            switch (key) {
-                case "n": this.player.next(); break;
-                case "b": this.player.previous(); break;
-                case "s": this.player.stop(); break;
-                case "p": this.player.play(); break;
-                case "q": this.exit();
-            }
-        });
+        stdin.on('data', this.onKeyPress);
+    }
+    onKeyPress(key) {
+        switch (key) {
+            case "n": this.player.next(); break;
+            case "b": this.player.previous(); break;
+            case "s": this.player.stop(); break;
+            case "p": this.player.play(); break;
+            case "q": this.exit();
+        }
     }
     render(action, data) {
         switch (action) {
-            case "reset":
+            case "init":
+                console.log("Press q to exit");
                 console.log("Total tunes found:", data.length);
-                break;
-            case "play":
-                console.log("\nPlaying", data.name, "using", data.player.name);
                 break;
             case "next":
             case "previous":
-                console.log("\nNext", data.name, "using", data.player.name);
+            case "play":
+                console.log("\nPlaying", "<" + capitalize(data.name), "(" + data.extension + ")>", "using", data.player.name);
                 break;
             case "stop": console.log("\nPlayer stopped");
                 break;
@@ -45,7 +49,8 @@ module.exports = class extends GUI {
         }
     }
     exit() {
-        this.player.destroy();
-        process.exit(0);
+        stdin.off('data', this.onKeyPress);
+        console.log("\n");
+        super.exit();
     }
 }

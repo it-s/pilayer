@@ -3,7 +3,7 @@ const { EventEmitter } = require('events');
 const Playlist = require("./Playlist");
 const Config = require('./Config');
 
-module.exports = class {
+module.exports = class extends EventEmitter {
     tune = null;
     config = null;
     repeat = false;
@@ -12,36 +12,35 @@ module.exports = class {
     isPlaying = false;
     _time = 0;
     _proc = null;
-    _onChange = null;
-    _onError = null;
     _tickHandler;
-    constructor(onChange = () => { }) {
+    constructor() {
+        super();
         this.config = Config.getInstance();
         this.repeat = this.config.repeat;
         this.shuffle = this.config.shuffle;
         this._tick = this._tick.bind(this);
-        this._onChange = onChange;
-        this.reset();
-        this._tickHandler = setInterval(this._tick, 1000);
+        this._procexit = this._procexit.bind(this);
+        this._tickHandler = setInterval(this._tick, this.config.tick);
     }
     _tick() {
         if (this.isPlaying) this._time += 1;
-        this._onChange("tick", {
+        this.emit("message", "tick", {
             isPlaying: this.isPlaying,
             tune: this.tune,
             time: this._time
         });
     }
-    reset() {
+    init() {
         this.playlist = new Playlist(this.config.sourcepath, {
             repeat: this.repeat,
             shuffle: this.shuffle,
         });
         this.tune = this.playlist.current;
-        this._onChange("reset", this.playlist);
+        this.emit("message", "init", this.playlist);
+        if(this.config.autoplay) this.play();
     }
     _procexit(sig) {
-        if (sig != 0) return;
+        if (this._proc.killed || isNaN(sig)) return;
         if (this.config.autoplay) this.next();
         else this.stop();
     }
@@ -49,7 +48,7 @@ module.exports = class {
         if (!this.isPlaying) {
             this.tune = this.playlist.current;
             this._proc = spawn(this.tune.player.cmd, this.tune.player.options);
-            this._proc.on('close', this._procexit.bind(this));
+            this._proc.on('close', this._procexit);
             this.isPlaying = true;
             this._time = 0;
             return true;
@@ -57,22 +56,25 @@ module.exports = class {
         return false;
     }
     play() {
-        if (this._play()) {
-            this._onChange("play", this.tune, this.playlist.position);
+        if (!this.isPlaying && this._play()) {
+            this.emit("message", "play", this.tune, this.playlist.position);
         }
     }
     _stop() {
         if (this.isPlaying) {
-            this._proc.pid &&
+            if (this._proc && this._proc.pid) {
+                this._proc.removeAllListeners('close');
                 this._proc.kill();
+            }
             this.isPlaying = false;
+            this._time = 0;
             return true;
         }
         return false;
     }
     stop() {
-        if (this._stop()) {
-            this._onChange("stop", this.tune, this.playlist.position);
+        if (this.isPlaying && this._stop()) {
+            this.emit("message", "stop", this.tune, this.playlist.position);
         }
     }
     next() {
@@ -81,10 +83,10 @@ module.exports = class {
             this._stop();
             this.tune = tune;
             this._play();
-            this._onChange("next", this.tune);
+            this.emit("message", "next", this.tune);
         } else {
             this.stop();
-            this._onChange("endlist", this.playlist);
+            this.emit("message", "endlist", this.playlist);
         }
     }
     previous() {
@@ -93,10 +95,10 @@ module.exports = class {
             this._stop();
             this.tune = tune;
             this._play();
-            this._onChange("previous", this.tune);
+            this.emit("message", "previous", this.tune);
         } else {
             this.stop();
-            this._onChange("startlist", this.playlist);
+            this.emit("message", "startlist", this.playlist);
         }
     }
     destroy() {
