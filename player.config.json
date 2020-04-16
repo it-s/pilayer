@@ -1,0 +1,20 @@
+{
+    "v": 1,
+    "sourcepath": "/home/eugene/Sync/Music/Chiptunes/adlib/",
+    "database": "./playlist.sqlite",
+    "shuffle": true,
+    "autoplay": true,
+    "listsize": 6,
+    "players": [
+        {
+            "type": "adplug",
+            "name": "Adlib Music Player",
+            "cmd": "adplay",
+            "options": [
+                "-o",
+                "::filename::"
+            ],
+            "match": "(\\.amd|\\.snd)"
+        }
+    ]
+}
