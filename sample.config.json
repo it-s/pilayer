@@ -1,0 +1,29 @@
+{
+    "v": 1,
+    "sourcepath": "/home/pi/music",
+    "shuffle": true,
+    "autoplay": true,
+    "listsize": 6,
+    "tick": 1000,
+    "players": [
+        {
+            "type": "adplug",
+            "name": "Adlib Music Player",
+            "cmd": "adplay",
+            "options": [
+                "-o",
+                "::filename::"
+            ],
+            "match": "(\\.amd|\\.snd|\\.rad)"
+        },
+        {
+            "type": "vgm",
+            "name": "Video Game Music",
+            "cmd": "/home/pi/vgmplay/VGMPlay/vgmplay",
+            "options": [
+                "::filename::"
+            ],
+            "match": "(\\.vgm|\\.vgz)"
+        }
+    ]
+}
