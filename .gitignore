@@ -110,3 +110,6 @@ dist
 
 # Local settings and files
 local-*
+
+# Temporary and garbage files
+~*
