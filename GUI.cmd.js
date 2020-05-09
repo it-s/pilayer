@@ -27,19 +27,23 @@ module.exports = class extends GUI {
     render(action, data) {
         switch (action) {
             case "init":
+                console.log("Press p to play");
+                console.log("Press s to stop");
+                console.log("Press n to skip to next tune");
+                console.log("Press b to go to previous tune");
                 console.log("Press q to exit");
-                console.log("Total tunes found:", data.length);
-                break;
-            case "next":
-            case "previous":
-            case "play":
-                console.log("\nPlaying", "<" + capitalize(data.name), "(" + data.extension + ")>", "using", data.player.name);
+                console.log("\n\nTotal tunes found:", data.length);
                 break;
             case "stop": console.log("\nPlayer stopped");
                 break;
             case "endlist": console.log("\nReached end of playlist");
                 break;
             case "startlist": console.log("\nAt the beginning of playlist");
+                break;
+            case "next":
+            case "previous":
+            case "play":
+                console.log("\n\nPlaying", "<" + capitalize(data.tune.name), "(" + data.tune.extension + ")>", "using", data.tune.player.name);
                 break;
             default:
                 rdl.cursorTo(process.stdout, 0);

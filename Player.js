@@ -6,8 +6,6 @@ const Config = require('./Config');
 module.exports = class extends EventEmitter {
     tune = null;
     config = null;
-    repeat = false;
-    shuffle = false;
     playlist = null;
     isPlaying = false;
     _time = 0;
@@ -16,28 +14,37 @@ module.exports = class extends EventEmitter {
     constructor() {
         super();
         this.config = Config.getInstance();
-        this.repeat = this.config.repeat;
-        this.shuffle = this.config.shuffle;
         this._tick = this._tick.bind(this);
         this._procexit = this._procexit.bind(this);
         this._tickHandler = setInterval(this._tick, this.config.tick);
     }
-    _tick() {
-        if (this.isPlaying) this._time += 1;
-        this.emit("message", "tick", {
+    get status() {
+        return {
             isPlaying: this.isPlaying,
             tune: this.tune,
-            time: this._time
-        });
+            time: this._time,
+            playlist: this.playlist,
+        };
+    }
+    _tick() {
+        this.emit("message", "tick", this.status);
+        if (this.isPlaying) this._time += 1;
     }
     init() {
         this.playlist = new Playlist(this.config.sourcepath, {
-            repeat: this.repeat,
-            shuffle: this.shuffle,
+            repeat: this.config.repeat,
+            shuffle: this.config.shuffle,
         });
         this.tune = this.playlist.current;
         this.emit("message", "init", this.playlist);
-        if(this.config.autoplay) this.play();
+        if (this.config.autoplay) this.play();
+    }
+    shuffle() {
+        this.playlist._shuffle();
+        this.emit("message", "shuffle", this.playlist);
+        if (this.isPlaying) {
+            this._stop(); this._play();
+        }
     }
     _procexit(sig) {
         if (this._proc.killed || isNaN(sig)) return;
@@ -57,7 +64,8 @@ module.exports = class extends EventEmitter {
     }
     play() {
         if (!this.isPlaying && this._play()) {
-            this.emit("message", "play", this.tune, this.playlist.position);
+            this.emit("message", "play", this.status);
+            this._tick();
         }
     }
     _stop() {
@@ -74,7 +82,7 @@ module.exports = class extends EventEmitter {
     }
     stop() {
         if (this.isPlaying && this._stop()) {
-            this.emit("message", "stop", this.tune, this.playlist.position);
+            this.emit("message", "stop", this.status);
         }
     }
     next() {
@@ -83,7 +91,8 @@ module.exports = class extends EventEmitter {
             this._stop();
             this.tune = tune;
             this._play();
-            this.emit("message", "next", this.tune);
+            this.emit("message", "next", this.status);
+            this._tick();
         } else {
             this.stop();
             this.emit("message", "endlist", this.playlist);
@@ -95,7 +104,8 @@ module.exports = class extends EventEmitter {
             this._stop();
             this.tune = tune;
             this._play();
-            this.emit("message", "previous", this.tune);
+            this.emit("message", "previous", this.status);
+            this._tick();
         } else {
             this.stop();
             this.emit("message", "startlist", this.playlist);
