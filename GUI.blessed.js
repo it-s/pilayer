@@ -6,6 +6,8 @@ const auto = 'shrink';
 function capitalize(txt) {
   return txt.charAt(0).toUpperCase() + txt.slice(1);
 }
+//console.log('Terminal size: ' + process.stdout.columns + 'x' + process.stdout.rows);
+var playlistH = process.stdout.rows - 7 - 7;
 
 const Style = {
   bg: "black",
@@ -39,6 +41,8 @@ Style.button = {
 
 const Screen = Blessed.screen({
   fastCSR: true,
+  useBCE: true,
+  sendFocus: true,
   autoPadding: false,
   title: "Pi-lay"
 });
@@ -46,6 +50,12 @@ const Screen = Blessed.screen({
 const Layout = Blessed.layout({
   parent: Screen,
   top: 0, left: 0,
+  padding: {
+	top: 0,
+	right: 1,
+	bottom: 1,
+	left: 1
+  },
   width: "100%", height: "100%"
 });
 
@@ -73,7 +83,7 @@ const Playlist = Blessed.list({
   tags: true,
   top: 0, left: 0,
   width: '100%',
-  height: 7,
+  height: playlistH,
   keys: false,
   mouse: false,
   border: 'line',
